@@ -1,5 +1,6 @@
 """The module.
 """
+
 from typing import List, Callable, Any
 from needle.autograd import Tensor
 from needle import ops
@@ -88,12 +89,32 @@ class Linear(Module):
         self.out_features = out_features
 
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+
+        self.weight = init.kaiming_uniform(
+            in_features, out_features, device=device, dtype=dtype
+        )
+        self.weight = Parameter(self.weight, dtype=dtype)
+        self.bias = (
+            Parameter(
+                init.kaiming_uniform(out_features, 1, dtype=dtype).reshape(
+                    (1, out_features)
+                ),
+                dtype=dtype,
+            )
+            if bias is True
+            else None
+        )
+
         ### END YOUR SOLUTION
 
     def forward(self, X: Tensor) -> Tensor:
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        print(X.shape)
+        print(self.weight.shape)
+        if self.bias is None:
+            return X @ self.weight
+        else:
+            return X @ self.weight + self.bias
         ### END YOUR SOLUTION
 
 
@@ -107,8 +128,9 @@ class Flatten(Module):
 class ReLU(Module):
     def forward(self, x: Tensor) -> Tensor:
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        return ops.relu(x)
         ### END YOUR SOLUTION
+
 
 class Sequential(Module):
     def __init__(self, *modules):
@@ -117,14 +139,20 @@ class Sequential(Module):
 
     def forward(self, x: Tensor) -> Tensor:
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        for module in self.modules:
+            x = module(x)
+        return x
         ### END YOUR SOLUTION
 
 
 class SoftmaxLoss(Module):
     def forward(self, logits: Tensor, y: Tensor):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        y_one_hot = ops.summation(logits * init.one_hot(logits.shape[1], y), axes=(1,))
+        return (
+            ops.summation((ops.logsumexp(logits, axes=(1,)) - y_one_hot), axes=(0,))
+            / logits.shape[0]
+        )
         ### END YOUR SOLUTION
 
 
@@ -142,7 +170,6 @@ class BatchNorm1d(Module):
         ### BEGIN YOUR SOLUTION
         raise NotImplementedError()
         ### END YOUR SOLUTION
-
 
 
 class LayerNorm1d(Module):
