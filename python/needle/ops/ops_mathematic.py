@@ -232,6 +232,8 @@ class Summation(TensorOp):
         ### BEGIN YOUR SOLUTION
         input_shape = list(node.inputs[0].shape)
         if self.axes is not None:
+            if isinstance(self.axes, Number):
+                self.axes = (self.axes,)
             for axe in self.axes:
                 input_shape[axe] = 1
             grad = reshape(out_grad, tuple(input_shape))
@@ -345,10 +347,10 @@ class ReLU(TensorOp):
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
-        res_grad = out_grad.realize_cached_data()
         input_data = node.inputs[0].realize_cached_data()
-        res_grad[input_data < 0] = 0
-        return Tensor(res_grad)
+        mask = array_api.ones_like(input_data)
+        mask[input_data < 0] = 0
+        return out_grad * Tensor(mask)
         ### END YOUR SOLUTION
 
 

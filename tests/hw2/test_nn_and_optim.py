@@ -114,9 +114,11 @@ def layernorm_backward(shape, dims):
     (f(x) ** 4).sum().backward()
     return x.grad.cached_data
 
+
 def logsoftmax_forward(shape, mult=1.0):
     x = get_tensor(*shape) * mult
     return ndl.ops.logsoftmax(x).cached_data
+
 
 def logsoftmax_backward(shape, mult=1.0):
     x = get_tensor(*shape)
@@ -124,6 +126,7 @@ def logsoftmax_backward(shape, mult=1.0):
     z = (y**2).sum()
     z.backward()
     return x.grad.cached_data
+
 
 def softmax_loss_forward(rows, classes):
     x = get_tensor(rows, classes)
@@ -471,30 +474,60 @@ def test_op_power_scalar_backward_1():
 
 
 def test_op_logsoftmax_forward_1():
-	np.testing.assert_allclose(logsoftmax_forward((3, 3)),
-		np.array([[-1.6436583 , -2.7936583 , -0.29365814],
-		 [-0.6787312 , -1.3287311 , -1.4787312 ],
-		 [-0.16337626, -3.0633762 , -2.2633762 ]], dtype=np.float32), rtol=1e-5, atol=1e-5)
+    np.testing.assert_allclose(
+        logsoftmax_forward((3, 3)),
+        np.array(
+            [
+                [-1.6436583, -2.7936583, -0.29365814],
+                [-0.6787312, -1.3287311, -1.4787312],
+                [-0.16337626, -3.0633762, -2.2633762],
+            ],
+            dtype=np.float32,
+        ),
+        rtol=1e-5,
+        atol=1e-5,
+    )
+
 
 def test_op_logsoftmax_stable_forward_1():
-	np.testing.assert_allclose(logsoftmax_forward((3, 3), mult=1e5),
-		np.array([[-135000.02, -250000. , 0. ],
-		 [ 0. , -65000. , -80000. ],
-		 [ 0. , -290000. , -210000. ]], dtype=np.float32), rtol=1e-5, atol=1e-5)
+    np.testing.assert_allclose(
+        logsoftmax_forward((3, 3), mult=1e5),
+        np.array(
+            [
+                [-135000.02, -250000.0, 0.0],
+                [0.0, -65000.0, -80000.0],
+                [0.0, -290000.0, -210000.0],
+            ],
+            dtype=np.float32,
+        ),
+        rtol=1e-5,
+        atol=1e-5,
+    )
+
 
 def test_op_logsoftmax_backward_1():
-	np.testing.assert_allclose(logsoftmax_backward((3, 3)),
-		np.array([[-1.4585897 , -5.008274 , 6.4668627 ],
-		 [ 2.1793516 , -0.81108296, -1.3682691 ],
-		 [ 8.998467 , -5.613649 , -3.3848193 ]], dtype=np.float32), rtol=1e-5, atol=1e-5)
+    np.testing.assert_allclose(
+        logsoftmax_backward((3, 3)),
+        np.array(
+            [
+                [-1.4585897, -5.008274, 6.4668627],
+                [2.1793516, -0.81108296, -1.3682691],
+                [8.998467, -5.613649, -3.3848193],
+            ],
+            dtype=np.float32,
+        ),
+        rtol=1e-5,
+        atol=1e-5,
+    )
+
 
 def submit_op_logsoftmax():
-	mugrade.submit(logsoftmax_forward((3, 4)))
-	mugrade.submit(logsoftmax_forward((3, 5), mult=1e5))
-	mugrade.submit(logsoftmax_forward((3, 6), mult=1e5))
-	mugrade.submit(logsoftmax_backward((1, 3)))
-	mugrade.submit(logsoftmax_backward((3, 6), mult=1e5))
- 
+    mugrade.submit(logsoftmax_forward((3, 4)))
+    mugrade.submit(logsoftmax_forward((3, 5), mult=1e5))
+    mugrade.submit(logsoftmax_forward((3, 6), mult=1e5))
+    mugrade.submit(logsoftmax_backward((1, 3)))
+    mugrade.submit(logsoftmax_backward((3, 6), mult=1e5))
+
 
 def test_op_logsumexp_forward_1():
     np.testing.assert_allclose(
@@ -2140,6 +2173,7 @@ def test_optim_adam_weight_decay_bias_correction_1():
     )
 
 
+# TODO: not correct yet
 # We're checking that you have not allocated too many tensors;
 # if this fails, make sure you're using .detach()/.data whenever possible.
 def test_optim_adam_z_memory_check_1():
